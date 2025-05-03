@@ -15,7 +15,9 @@ extends:
     projectName: 'SocketService'
     servicePort: '8080'
     environment: 'production'
+    sonarCloudOrganization: 'tu-organizacion' # Reemplaza con tu organización real
+    sonarCloudProjectKey: 'tu-organizacion_SocketService' # Reemplaza con tu clave de proyecto
     additionalSteps:
       - script: |
-          mvn verify
+          mvn verify -Pcoverage
         displayName: 'Socket Service'
