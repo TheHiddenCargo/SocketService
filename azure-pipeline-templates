@@ -12,6 +12,12 @@ parameters:
   - name: additionalSteps
     type: stepList
     default: []
+  - name: sonarCloudOrganization
+    type: string
+    default: 'tuOrganizacion'
+  - name: sonarCloudProjectKey
+    type: string
+    default: '$(Build.Repository.Name)'
 
 stages:
   - stage: Build
@@ -23,7 +29,7 @@ stages:
         steps:
           - checkout: self
             persistCredentials: true
-
+            fetchDepth: 0  # SonarCloud necesita la historia completa para un mejor análisis
 
           - task: JavaToolInstaller@0
             inputs:
@@ -32,26 +38,64 @@ stages:
               jdkSourceOption: 'PreInstalled'
             displayName: 'Setup JDK'
 
+          # Preparar análisis de SonarCloud
+          - task: SonarCloudPrepare@3
+            displayName: 'Preparar análisis SonarCloud'
+            inputs:
+              SonarCloud: 'SonarCloud'
+              organization: '${{ parameters.sonarCloudOrganization }}'
+              scannerMode: 'Other'
+              projectKey: '${{ parameters.sonarCloudProjectKey }}'
+              projectName: '${{ parameters.projectName }}'
+              extraProperties: |
+                # Propiedades generales
+                sonar.sources=src/main
+                sonar.tests=src/test
+                sonar.java.binaries=target/classes
+                
+                # Configuración para análisis de cobertura
+                sonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+                
+                # Para revisión de hotspots
+                sonar.java.spotbugs.reportPaths=target/spotbugsXml.xml
+                sonar.java.pmd.reportPaths=target/pmd.xml
+                
+                # Si necesitas excluir archivos
+                sonar.exclusions=**/generated/**,**/target/**
+                
+                # Para seguimiento de hotspots ya revisados
+                sonar.hotspots.activation=true
 
           - task: Maven@3
             inputs:
               mavenPomFile: 'pom.xml'
               goals: 'clean package'
-              options: '-DskipTests=false'
+              options: '-DskipTests=false -Pcoverage'
             displayName: 'Maven Build'
 
-          # Ejecutar pruebas con Maven
+          # Ejecutar pruebas con Maven y cobertura de código
           - task: Maven@3
             inputs:
               mavenPomFile: 'pom.xml'
               goals: 'test'
-            displayName: 'Run Tests'
+              options: '-Pcoverage'
+            displayName: 'Run Tests with Coverage'
 
           - ${{ parameters.additionalSteps }}
 
           - script: |
               ${{ parameters.buildCommand }}
             displayName: 'Additional Build Commands'
+
+          # Ejecutar análisis de SonarCloud
+          - task: SonarCloudAnalyze@3
+            displayName: 'Ejecutar análisis SonarCloud'
+
+          # Publicar la calidad del análisis
+          - task: SonarCloudPublish@3
+            displayName: 'Publicar resultados de SonarCloud'
+            inputs:
+              pollingTimeoutSec: '300'
 
           - task: CopyFiles@2
             inputs:
