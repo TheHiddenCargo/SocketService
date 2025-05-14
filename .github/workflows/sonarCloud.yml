@@ -1,0 +1,21 @@
+name: SonarCloud Analysis
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  sonarcloud:
+    uses: TheHiddenCargo/central-pipelines/.github/workflows/sonarcloud-analysis.yml@573efc0e1ace509f31ece2235ebecd7ec2b859a9
+    with:
+      java-version: '21'
+      branch-name: 'main'
+      coverage-exclusions: 'src/main/java/arsw/tamaltolimense/SocketServer/LobbySocketService*,src/main/java/arsw/tamaltolimense/SocketServer/*Data.java,src/main/java/arsw/tamaltolimense/SocketServer/*State.java,src/main/java/arsw/tamaltolimense/SocketServer/ContainerInfo.java,src/main/java/arsw/tamaltolimense/SocketServer/GameState.java,src/main/java/arsw/tamaltolimense/SocketServer/BidResultData.java,src/main/java/arsw/tamaltolimense/SocketServer/GameStartedData.java,src/main/java/arsw/tamaltolimense/SocketServer/NewRoundData.java,src/main/java/arsw/tamaltolimense/SocketServer/PlaceBidData.java,src/main/java/arsw/tamaltolimense/SocketServer/PlayerNotReadyData.java,src/main/java/arsw/tamaltolimense/SocketServer/NewBidData.java,src/main/java/arsw/tamaltolimense/SocketServer/RoundEndedData.java,src/main/java/arsw/tamaltolimense/SocketServer/ReadyPlayerData.java,src/main/java/arsw/tamaltolimense/SocketServer/PLayerReadyData.java,src/main/java/arsw/tamaltolimense/SocketServer/PLayerUpdateData.java,src/main/java/arsw/tamaltolimense/SocketServer/PlayerBalanceData.java,src/main/java/arsw/tamaltolimense/SocketServer/ContainerInfo.java,src/main/java/arsw/tamaltolimense/SocketServer/PlayerState.java,src/main/java/arsw/tamaltolimense/SocketServer/ChatMessageData.java,src/main/java/arsw/tamaltolimense/SocketServer/ReadyForNextRoundData.java,src/main/java/arsw/tamaltolimense/SocketServer/JoinLobbyData.java,src/main/java/arsw/tamaltolimense/SocketServer/LeaveGameData.java,src/main/java/arsw/tamaltolimense/SocketServer/GameEndData.java,src/main/java/arsw/tamaltolimense/SocketServer/PlayerLeftData.java,src/main/java/arsw/tamaltolimense/SocketServer/AllReadyData.java,src/main/java/arsw/tamaltolimense/SocketServer/PlayerLeftGameData.java,src/main/java/arsw/tamaltolimense/SocketServer/PlayerJoinedData.java,src/main/java/arsw/tamaltolimense/SocketServer/LeaveLobbyData.java,src/main/java/arsw/tamaltolimense/SocketServer/StartGameData.java,src/main/java/arsw/tamaltolimense/SocketServer/PlayerReadyData.java,src/main/java/arsw/tamaltolimense/SocketServer/PlayerUpdateData.java'
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
+      SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
