@@ -9,6 +9,8 @@ import org.springframework.web.client.RestTemplate;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+
+import java.security.SecureRandom;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +22,7 @@ public class LobbySocketService {
     // API URLs
     private static final String LOBBIES_API_URL = "https://thehiddencargo1.azure-api.net/lobbies/lobbies";
     private static final String BID_SERVICE_URL = "https://thehiddencargo1.azure-api.net/bids";
-    private static final String API_KEY = "b553314cb92447a6bb13871a44b16726";
+    private static final String API_KEY = System.getenv("API_KEY");
 
     private SocketIOServer server;
     private final Map<String, String> sessionToNickname = new HashMap<>();
@@ -1238,7 +1240,7 @@ public class LobbySocketService {
 
     private Queue<ContainerInfo> generateContainers(int count) {
         Queue<ContainerInfo> containers = new LinkedList<>();
-        Random random = new Random();
+        SecureRandom random = new SecureRandom();
 
         for (int i = 0; i < count; i++) {
             try {

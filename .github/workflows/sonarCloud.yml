@@ -10,7 +10,7 @@ on:
 
 jobs:
   sonarcloud:
-    uses: TheHiddenCargo/central-pipelines/.github/workflows/sonarcloud-analysis.yml@573efc0e1ace509f31ece2235ebecd7ec2b859a9
+    uses: TheHiddenCargo/central-pipelines/.github/workflows/sonarcloud-analysis.yml@eb43984b7a87a65352b363a53daf2ce687de32f4
     with:
       java-version: '21'
       branch-name: 'main'
@@ -19,3 +19,4 @@ jobs:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
       SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+      API_KEY: ${{ secrets.API_KEY }}
