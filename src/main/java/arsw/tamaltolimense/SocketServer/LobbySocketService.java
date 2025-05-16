@@ -799,7 +799,7 @@ public class LobbySocketService {
             public void run() {
                 endAuctionRound(lobbyName);
             }
-        }, seconds * 1000);
+        }, seconds * 1000L);
 
         gameTimers.put(lobbyName, timer);
 
@@ -1148,7 +1148,13 @@ public class LobbySocketService {
                         }
                     }
                 }, 2000); // Enviar evento de respaldo después de 2 segundos
-            } catch (Exception e) {
+            }catch (InterruptedException ie) {
+                // Re-interrumpir el hilo
+                Thread.currentThread().interrupt();
+                // Loguear la interrupción
+                logger.warn("Hilo interrumpido mientras se enviaban eventos de finalización para lobby {}", lobbyName);
+            }
+            catch (Exception e) {
                 logger.error("Error al enviar evento gameEnd: {}", e.getMessage());
             } finally {
                 // Asegurarnos de limpiar recursos
