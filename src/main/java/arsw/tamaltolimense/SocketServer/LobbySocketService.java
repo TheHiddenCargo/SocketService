@@ -715,7 +715,7 @@ public class LobbySocketService {
             // Configurar los headers
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("Ocp-Apim-Subscription-Key", "b553314cb92447a6bb13871a44b16726");
+            headers.set("Ocp-Apim-Subscription-Key", API_KEY);
 
             // Crear la entidad HTTP con el cuerpo JSON
             HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(params, headers);
@@ -886,7 +886,7 @@ public class LobbySocketService {
                 // Configurar los headers
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_JSON);
-                headers.set("Ocp-Apim-Subscription-Key", "b553314cb92447a6bb13871a44b16726");
+                headers.set("Ocp-Apim-Subscription-Key", API_KEY);
 
                 // Crear la entidad HTTP con el cuerpo JSON
                 HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(params, headers);
@@ -971,7 +971,7 @@ public class LobbySocketService {
             // Cerrar la apuesta actual
             String closeUrl = BID_SERVICE_URL + "/bids/close/" + container.getId();
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Ocp-Apim-Subscription-Key", "b553314cb92447a6bb13871a44b16726");
+            headers.set("Ocp-Apim-Subscription-Key", API_KEY);
 
             HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
 
@@ -1265,7 +1265,7 @@ public class LobbySocketService {
             try {
                 // Configurar los headers para la petición
                 HttpHeaders headers = new HttpHeaders();
-                headers.set("Ocp-Apim-Subscription-Key", "b553314cb92447a6bb13871a44b16726");
+                headers.set("Ocp-Apim-Subscription-Key", API_KEY);
                 HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
 
                 // Realizar la petición GET al microservicio de contenedores
