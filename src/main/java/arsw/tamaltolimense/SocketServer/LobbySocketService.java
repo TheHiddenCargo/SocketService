@@ -264,6 +264,9 @@ public class LobbySocketService {
             } else {
                 logger.error("Error al actualizar balance para usuario {}: {}", nickname, response.getStatusCode());
             }
+        }catch (NullPointerException e) {
+            logger.error("Null pointerException {}: {}", nickname, e.getMessage(), e);
+
         } catch (Exception e) {
             logger.error("Error al enviar actualización de balance para usuario {}: {}", nickname, e.getMessage(), e);
         }
@@ -743,7 +746,17 @@ public class LobbySocketService {
                         attempt + 1, lobbyName, gameState.getCurrentRound(), gameState.getTotalRounds());
 
                 // Pequeña pausa entre intentos
-                if (attempt < 2) Thread.sleep(200);
+                if (attempt < 2) {
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException ie) {
+                        // Re-interrumpir el hilo actual
+                        Thread.currentThread().interrupt();
+                        // Loguear el evento de interrupción
+                        logger.warn("Hilo interrumpido mientras enviaba eventos a lobby {}", lobbyName);
+                        break; // Salir del bucle si el hilo fue interrumpido
+                    }
+                }
             }
 
             // Enviar evento adicional después de un tiempo para clientes que podrían haber perdido el mensaje
