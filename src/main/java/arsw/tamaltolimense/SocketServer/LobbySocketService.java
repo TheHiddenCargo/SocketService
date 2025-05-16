@@ -251,7 +251,7 @@ public class LobbySocketService {
             // Verificar respuesta
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 Map<String, Object> responseData = response.getBody();
-                if (responseData.containsKey("userBalance")) {
+                if (responseData != null && responseData.containsKey("userBalance")) {
                     int newBalance = ((Number) responseData.get("userBalance")).intValue();
                     logger.info("Balance actualizado para usuario {}: nuevo balance={}", nickname, newBalance);
 
@@ -1273,90 +1273,93 @@ public class LobbySocketService {
 
                 if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                     Map<String, Object> containerData = response.getBody();
+                    if(containerData != null) {
 
-                    ContainerInfo container = new ContainerInfo();
-                    container.setId("container-" + UUID.randomUUID().toString().substring(0, 8));
+                        ContainerInfo container = new ContainerInfo();
+                        container.setId("container-" + UUID.randomUUID().toString().substring(0, 8));
 
-                    // Obtener el color del contenedor y usarlo para determinar el tipo
-                    String color = (String) containerData.get("color");
+                        // Obtener el color del contenedor y usarlo para determinar el tipo
+                        String color = (String) containerData.get("color");
 
-                    // Mapear color a tipo (adaptar según necesites)
-                    String type;
-                    if ("gris".equalsIgnoreCase(color)) {
-                        type = "Raro";
-                    } else if ("blanco".equalsIgnoreCase(color)) {
-                        type = "Normal";
-                    } else if ("azul".equalsIgnoreCase(color)) {
-                        type = "Épico";
-                    } else if ("dorado".equalsIgnoreCase(color)) {
-                        type = "Legendario";
-                    } else {
-                        type = "Normal"; // Por defecto
-                    }
-                    container.setType(type);
+                        // Mapear color a tipo (adaptar según necesites)
+                        String type;
+                        if ("gris".equalsIgnoreCase(color)) {
+                            type = "Raro";
+                        } else if ("blanco".equalsIgnoreCase(color)) {
+                            type = "Normal";
+                        } else if ("azul".equalsIgnoreCase(color)) {
+                            type = "Épico";
+                        } else if ("dorado".equalsIgnoreCase(color)) {
+                            type = "Legendario";
+                        } else {
+                            type = "Normal"; // Por defecto
+                        }
+                        container.setType(type);
 
-                    // Obtener y procesar objetos para calcular el valor
-                    List<Map<String, Object>> objetos = (List<Map<String, Object>>) containerData.get("objetos");
-                    if (objetos != null && !objetos.isEmpty()) {
-                        // Calcular el valor total como suma de precios de los objetos
-                        double valorTotal = 0;
-                        for (Map<String, Object> objeto : objetos) {
-                            if (objeto.containsKey("precio")) {
+                        // Obtener y procesar objetos para calcular el valor
+                        List<Map<String, Object>> objetos = (List<Map<String, Object>>) containerData.get("objetos");
+                        if (objetos != null && !objetos.isEmpty()) {
+                            // Calcular el valor total como suma de precios de los objetos
+                            double valorTotal = 0;
+                            for (Map<String, Object> objeto : objetos) {
+                                if (objeto.containsKey("precio")) {
+                                    double precio = ((Number) objeto.get("precio")).doubleValue();
+                                    valorTotal += precio;
+                                }
+                            }
+
+                            // Establecer el valor total redondeado a entero
+                            container.setValue((int) Math.round(valorTotal));
+
+                            // Guardar información adicional en el ID para recuperarla después
+                            // Formato: container-[UUID]-color:[color]-objects:[objeto1,precio1;objeto2,precio2]
+                            StringBuilder idBuilder = new StringBuilder(container.getId());
+                            idBuilder.append("-color:").append(color);
+                            idBuilder.append("-objects:");
+
+                            for (int j = 0; j < objetos.size(); j++) {
+                                Map<String, Object> objeto = objetos.get(j);
+                                String nombre = (String) objeto.get("nombre");
                                 double precio = ((Number) objeto.get("precio")).doubleValue();
-                                valorTotal += precio;
+
+                                idBuilder.append(nombre).append(",").append(precio);
+                                if (j < objetos.size() - 1) {
+                                    idBuilder.append(";");
+                                }
                             }
+
+                            container.setId(idBuilder.toString());
+                        } else {
+                            // Si no hay objetos, asignar un valor por defecto según el tipo
+                            int valor;
+                            switch (type) {
+                                case "Raro":
+                                    valor = 500 + random.nextInt(500);
+                                    break;
+                                case "Épico":
+                                    valor = 1000 + random.nextInt(1000);
+                                    break;
+                                case "Legendario":
+                                    valor = 2000 + random.nextInt(3000);
+                                    break;
+                                default: // Normal
+                                    valor = 200 + random.nextInt(300);
+                            }
+                            container.setValue(valor);
                         }
 
-                        // Establecer el valor total redondeado a entero
-                        container.setValue((int) Math.round(valorTotal));
+                        logger.info("Contenedor obtenido de API: id={}, tipo={}, valor={}",
+                                container.getId(), container.getType(), container.getValue());
 
-                        // Guardar información adicional en el ID para recuperarla después
-                        // Formato: container-[UUID]-color:[color]-objects:[objeto1,precio1;objeto2,precio2]
-                        StringBuilder idBuilder = new StringBuilder(container.getId());
-                        idBuilder.append("-color:").append(color);
-                        idBuilder.append("-objects:");
-
-                        for (int j = 0; j < objetos.size(); j++) {
-                            Map<String, Object> objeto = objetos.get(j);
-                            String nombre = (String) objeto.get("nombre");
-                            double precio = ((Number) objeto.get("precio")).doubleValue();
-
-                            idBuilder.append(nombre).append(",").append(precio);
-                            if (j < objetos.size() - 1) {
-                                idBuilder.append(";");
-                            }
-                        }
-
-                        container.setId(idBuilder.toString());
+                        containers.add(container);
                     } else {
-                        // Si no hay objetos, asignar un valor por defecto según el tipo
-                        int valor;
-                        switch (type) {
-                            case "Raro":
-                                valor = 500 + random.nextInt(500);
-                                break;
-                            case "Épico":
-                                valor = 1000 + random.nextInt(1000);
-                                break;
-                            case "Legendario":
-                                valor = 2000 + random.nextInt(3000);
-                                break;
-                            default: // Normal
-                                valor = 200 + random.nextInt(300);
-                        }
-                        container.setValue(valor);
+                        logger.warn("Error al obtener contenedor desde API. Generando uno local. Respuesta: {}",
+                                response.getStatusCode());
+                        // Generar contenedor local en caso de error
+
+                    }
                     }
 
-                    logger.info("Contenedor obtenido de API: id={}, tipo={}, valor={}",
-                            container.getId(), container.getType(), container.getValue());
-
-                    containers.add(container);
-                } else {
-                    logger.warn("Error al obtener contenedor desde API. Generando uno local. Respuesta: {}",
-                            response.getStatusCode());
-                    // Generar contenedor local en caso de error
-
-                }
             } catch (Exception e) {
                 logger.error("Error al comunicarse con API de contenedores: {}", e.getMessage());
                 // Generar contenedor local en caso de error
